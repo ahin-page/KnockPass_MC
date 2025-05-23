@@ -46,23 +46,24 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        event?.let {
-            when (event.sensor.type) {
-                Sensor.TYPE_ACCELEROMETER -> {
-                    val ax = event.values[0]
-                    val ay = event.values[1]
-                    val az = event.values[2]
-                    Log.d("Accelerometer", "X:$ax, Y:$ay, Z:$az")
-                }
-                Sensor.TYPE_GYROSCOPE -> {
-                    val gx = event.values[0]
-                    val gy = event.values[1]
-                    val gz = event.values[2]
-                    Log.d("Gyroscope", "X:$gx, Y:$gy, Z:$gz")
-                }
+        if (event != null) {
+            val type = event.sensor.type
+            val values = event.values
+
+            if (type == Sensor.TYPE_ACCELEROMETER) {
+                val ax = values[0]
+                val ay = values[1]
+                val az = values[2]
+                Log.d("Accelerometer", "X:$ax, Y:$ay, Z:$az")
+            } else if (type == Sensor.TYPE_GYROSCOPE) {
+                val gx = values[0]
+                val gy = values[1]
+                val gz = values[2]
+                Log.d("Gyroscope", "X:$gx, Y:$gy, Z:$gz")
             }
         }
     }
+
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
