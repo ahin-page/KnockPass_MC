@@ -1,5 +1,14 @@
 package com.ahin.knockpass
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+
 
 class SensorActivity : AppCompatActivity(), SensorEventListener {
 
@@ -9,9 +18,9 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_sensor)
 
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }
@@ -46,6 +55,8 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
                     val gz = event.values[2]
                     Log.d("Gyroscope", "X:$gx, Y:$gy, Z:$gz")
                 }
+
+                else -> {}
             }
         }
     }
