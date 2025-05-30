@@ -5,9 +5,21 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.util.Date
+import java.util.Locale
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+
 
 
 class SensorActivity : AppCompatActivity(), SensorEventListener {
@@ -23,6 +35,8 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+
+        requestAudioPermission()
     }
 
     override fun onResume() {
@@ -47,10 +61,10 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
         if (dir != null && !dir.exists()) {
             dir.mkdirs()
         }
-        logFile = File(dir, fileName)
+        var logFile = File(dir, fileName)
 
         try {
-            fileWriter = FileWriter(logFile)
+            var fileWriter = FileWriter(logFile)
             fileWriter.append("timestamp,sensor_type,x,y,z\n")
         } catch (e: IOException) {
             e.printStackTrace()
@@ -79,4 +93,17 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    private fun requestAudioPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                1001
+            )
+        }
+    }
 }
+
