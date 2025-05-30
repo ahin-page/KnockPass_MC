@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/tvSettingGuide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="암호로 사용할 노크 패턴을 기록하세요.\n시작 버튼을 누르고 물체를 두드린 후, 끝내기를 누르세요."
+        android:textSize="16sp"
+        android:gravity="center"
+        android:paddingBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btnStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="시작"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="끝내기" />
+</LinearLayout>
