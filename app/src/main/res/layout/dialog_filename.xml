@@ -9,12 +9,18 @@
         android:id="@+id/autoObject"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Object name" />
+        android:hint="Object name"
+        android:paddingVertical="12dp"
+        android:minHeight="48dp"
+        android:textSize="16sp" />
 
     <EditText
         android:id="@+id/etKnockNumber"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:hint="Knock number" />
+        android:hint="Knock number"
+        android:paddingVertical="12dp"
+        android:minHeight="48dp"
+        android:textSize="16sp" />
 </LinearLayout>
