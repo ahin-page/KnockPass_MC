@@ -28,6 +28,8 @@ import androidx.compose.ui.text.input.KeyboardType.Companion.Text
 import androidx.compose.ui.unit.dp
 import com.ahin.knockpass.ui.theme.KnockpassTheme
 import java.io.File
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 //data class SensorSample(
 //    val timestamp: Long,
