@@ -3,6 +3,7 @@ package com.ahin.knockpass
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.util.Log
+import android.media.MediaRecorder
 
 class MicRecorder {
 

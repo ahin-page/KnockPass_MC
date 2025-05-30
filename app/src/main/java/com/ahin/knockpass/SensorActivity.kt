@@ -1,5 +1,14 @@
 package com.ahin.knockpass
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+
 
 class SensorActivity : AppCompatActivity(), SensorEventListener {
 
@@ -9,7 +18,7 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_sensor)
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -31,6 +40,23 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
+    private fun setupCsvFile() {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val fileName = "sensor_data_$timestamp.csv"
+        val dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+        if (dir != null && !dir.exists()) {
+            dir.mkdirs()
+        }
+        logFile = File(dir, fileName)
+
+        try {
+            fileWriter = FileWriter(logFile)
+            fileWriter.append("timestamp,sensor_type,x,y,z\n")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {
             when (event.sensor.type) {
@@ -46,6 +72,8 @@ class SensorActivity : AppCompatActivity(), SensorEventListener {
                     val gz = event.values[2]
                     Log.d("Gyroscope", "X:$gx, Y:$gy, Z:$gz")
                 }
+
+                else -> {}
             }
         }
     }
