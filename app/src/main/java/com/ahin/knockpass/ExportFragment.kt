@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import java.io.File
+import java.util.zip.*
 
 class ExportFragment : Fragment() {
 
@@ -35,13 +36,13 @@ class ExportFragment : Fragment() {
                 Toast.makeText(requireContext(), "이메일 주소를 입력하세요", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            sendLatestCSV(toEmail)
+            sendAllAsZip(toEmail)
         }
 
         return view
     }
 
-    private fun sendLatestCSV(recipient: String) {
+    private fun sendAllAsZip(recipient: String) {
         val dir = requireContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
         val csvFiles = dir?.listFiles { _, name -> name.endsWith(".csv") }
 
@@ -50,18 +51,32 @@ class ExportFragment : Fragment() {
             return
         }
 
-        val latestFile = csvFiles.maxByOrNull { it.lastModified() } ?: return
-        val uri: Uri = FileProvider.getUriForFile(
+        val zipFile = File(dir, "sensor_data_export.zip")
+        try {
+            ZipOutputStream(zipFile.outputStream()).use { zos ->
+                csvFiles.forEach { file ->
+                    val entry = ZipEntry(file.name)
+                    zos.putNextEntry(entry)
+                    file.inputStream().copyTo(zos)
+                    zos.closeEntry()
+                }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "ZIP 생성 실패: ${e.message}", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val uri = FileProvider.getUriForFile(
             requireContext(),
             "${requireContext().packageName}.fileprovider",
-            latestFile
+            zipFile
         )
 
         val emailIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/csv"
+            type = "application/zip"
             putExtra(Intent.EXTRA_EMAIL, arrayOf(recipient))
-            putExtra(Intent.EXTRA_SUBJECT, "센서 데이터 CSV")
-            putExtra(Intent.EXTRA_TEXT, "첨부된 센서 데이터를 확인해주세요.")
+            putExtra(Intent.EXTRA_SUBJECT, "센서 데이터 ZIP")
+            putExtra(Intent.EXTRA_TEXT, "첨부된 압축파일에서 센서 데이터를 확인해주세요.")
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
