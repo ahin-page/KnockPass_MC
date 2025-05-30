@@ -10,9 +10,9 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 
 class MicRecorder(
-    private val onAudioSample: (SensorLog) -> Unit
+    private val onRawAudioData: (FloatArray) -> Unit
 ) {
-    private val sampleRate = 44100
+    private val sampleRate = 16000
     private val bufferSize = AudioRecord.getMinBufferSize(
         sampleRate,
         AudioFormat.CHANNEL_IN_MONO,
@@ -21,12 +21,11 @@ class MicRecorder(
 
     private var recorder: AudioRecord? = null
     private var isRecording = false
+    private val recordedData = mutableListOf<Float>()  // ✅ 전체 raw audio 저장
 
     fun start(context: Context) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
         ) {
             Log.e("MicRecorder", "RECORD_AUDIO permission not granted")
             return
@@ -47,15 +46,16 @@ class MicRecorder(
 
         recorder?.startRecording()
         isRecording = true
+        recordedData.clear()  // ✅ 시작할 때 초기화
 
         Thread {
-            val buffer = ShortArray(bufferSize)
+            val shortBuffer = ShortArray(bufferSize)
             while (isRecording) {
-                val read = recorder?.read(buffer, 0, buffer.size) ?: 0
+                val read = recorder?.read(shortBuffer, 0, shortBuffer.size) ?: 0
                 if (read > 0) {
-                    val energy = Math.sqrt(buffer.map { it * it.toDouble() }.average()).toFloat()
-                    val timestamp = System.currentTimeMillis()
-                    onAudioSample(SensorLog(timestamp, "Microphone", energy))
+                    val floatData = FloatArray(read) { i -> shortBuffer[i] / 32768.0f }
+                    recordedData.addAll(floatData.toList())  // ✅ 전체 저장
+                    onRawAudioData(floatData)
                 }
             }
         }.start()
@@ -66,5 +66,9 @@ class MicRecorder(
         recorder?.stop()
         recorder?.release()
         recorder = null
+    }
+
+    fun getRawAudio(): FloatArray {
+        return recordedData.toFloatArray()
     }
 }

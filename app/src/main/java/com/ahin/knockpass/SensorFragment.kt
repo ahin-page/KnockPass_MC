@@ -1,5 +1,7 @@
 package com.ahin.knockpass
 
+import com.ahin.knockpass.utils.saveMFCCToCSV
+import MFCCProcessor
 import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
@@ -60,8 +62,13 @@ class SensorFragment : Fragment(), SensorEventListener {
         sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-        micRecorder = MicRecorder { if (isRecording) sensorDataList.add(it) }
-
+        micRecorder = MicRecorder(onRawAudioData = { floatArray ->
+            if (isRecording) {
+                val energy = floatArray.map { it * it }.average().let { Math.sqrt(it).toFloat() }
+                val timestamp = System.currentTimeMillis()
+                sensorDataList.add(SensorLog(timestamp, "Microphone", energy))
+            }
+        })
         view.findViewById<Button>(R.id.btnStart).setOnClickListener {
             showFilenameDialog()
         }
@@ -71,7 +78,16 @@ class SensorFragment : Fragment(), SensorEventListener {
             stopSensors()
             micRecorder.stop()
             val filename = generateFilename()
+
+            // ① 센서 데이터 CSV 저장
             saveToCSV(requireContext(), filename)
+
+            // ② MFCC 저장 - 오디오 데이터를 MFCC로 변환 후 CSV 저장
+            val processor = MFCCProcessor()
+            val audioFloatArray = micRecorder.getRawAudio()  // ⚠️ 이 함수가 필요함 (MicRecorder에서 오디오 FloatArray 제공)
+            val mfccFeatures = processor.extractMFCC(audioFloatArray)
+            saveMFCCToCSV(requireContext(), mfccFeatures, "${filename}_mfcc")
+
             Toast.makeText(requireContext(), "저장 완료", Toast.LENGTH_SHORT).show()
         }
     }
