@@ -7,13 +7,13 @@
     android:gravity="center">
 
     <TextView
-        android:id="@+id/tvSettingGuide"
+        android:id="@+id/tvProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="암호로 사용할 노크 패턴을 기록하세요.\n시작 버튼을 누르고 물체를 두드린 후, 끝내기를 누르세요."
-        android:textSize="16sp"
-        android:gravity="center"
-        android:paddingBottom="24dp"/>
+        android:text="0 / 5"
+        android:layout_marginTop="16dp"
+        android:textSize="18sp"
+        android:layout_gravity="center" />
 
     <Button
         android:id="@+id/btnStart"
