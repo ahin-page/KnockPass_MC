@@ -7,6 +7,7 @@ import android.hardware.*
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.os.Environment
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,57 +33,37 @@ data class SensorLog(
 class SensorActivity : ComponentActivity(), SensorEventListener {
 
     private lateinit var sensorManager: SensorManager
+    private lateinit var micRecorder: MicRecorder
     private var accelerometer: Sensor? = null
     private var gyroscope: Sensor? = null
-    private lateinit var micRecorder: MicRecorder
-
     private val sensorDataList = mutableListOf<SensorLog>()
     private var isRecording = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_sensor)
+
         requestPermissions()
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-        micRecorder = MicRecorder { audioLog ->
-            if (isRecording) sensorDataList.add(audioLog)
+        micRecorder = MicRecorder { if (isRecording) sensorDataList.add(it) }
+
+        // 버튼 연결
+        findViewById<Button>(R.id.btnStart).setOnClickListener {
+            isRecording = true
+            startSensors()
+            micRecorder.start(this)
+            Toast.makeText(this, "수집 시작", Toast.LENGTH_SHORT).show()
         }
 
-        setContent {
-            val context = LocalContext.current
-
-            Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text("센서 수집", style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(16.dp))
-
-                Row {
-                    Button(onClick = {
-                        isRecording = true
-                        startSensors()
-                        micRecorder.start(context)  // MicRecorder.start(context) 호출
-                        Toast.makeText(context, "수집 시작", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Text("시작")
-                    }
-
-                    Spacer(Modifier.width(16.dp))
-
-                    Button(onClick = {
-                        isRecording = false
-                        stopSensors()
-                        micRecorder.stop()
-                        saveToCSV(context)          // CSV 저장만
-                        Toast.makeText(context, "저장 완료", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Text("끝내기")
-                    }
-                }
-            }
+        findViewById<Button>(R.id.btnStop).setOnClickListener {
+            isRecording = false
+            stopSensors()
+            micRecorder.stop()
+            saveToCSV(this)
+            Toast.makeText(this, "저장 완료", Toast.LENGTH_SHORT).show()
         }
     }
 
