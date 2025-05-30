@@ -4,65 +4,65 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-
+import java.io.File
 
 class ExportFragment : Fragment() {
 
-    private lateinit var exportButton: Button
+    private lateinit var etEmail: EditText
+    private lateinit var btnExport: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_export, container, false)
+    ): View = inflater.inflate(R.layout.fragment_export, container, false).also { view ->
+        etEmail   = view.findViewById(R.id.etEmail)
+        btnExport = view.findViewById(R.id.btnExport)
 
-        exportButton = view.findViewById(R.id.btn_export_csv)
-        exportButton.setOnClickListener {
-            sendEmailWithCSV()
+        btnExport.setOnClickListener {
+            val to = etEmail.text.toString().trim()
+            if (to.isEmpty()) {
+                Toast.makeText(requireContext(), "Please enter recipient email", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            exportCsvByEmail(to)
         }
-
-        return view
     }
 
-    private fun sendEmailWithCSV() {
-        // 최신 sensor_data_*.csv 파일 찾기
+    // --- CSV 이메일 전송 로직 ----------------------
+    private fun exportCsvByEmail(recipient: String) {
         val dir = requireContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
         if (dir == null || !dir.exists()) {
-            Toast.makeText(requireContext(), "CSV 파일 디렉토리를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "CSV directory not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val csvs = dir.listFiles { _, n -> n.endsWith(".csv") }
+        if (csvs.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "No CSV files to send", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val csvFiles = dir.listFiles { _, name ->
-            name.endsWith(".csv")
-        }
-
-        if (csvFiles.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "보낼 CSV 파일이 없습니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val latestFile = csvFiles.maxByOrNull { it.lastModified() } ?: return
-        val uri: Uri = FileProvider.getUriForFile(
+        // 최신 파일 선택
+        val latest = csvs.maxByOrNull { it.lastModified() } ?: return
+        val uri = FileProvider.getUriForFile(
             requireContext(),
             "${requireContext().packageName}.fileprovider",
-            latestFile
+            latest
         )
 
-        val emailIntent = Intent(Intent.ACTION_SEND).apply {
+        // 이메일 인텐트 구성
+        val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/csv"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(recipient))
             putExtra(Intent.EXTRA_SUBJECT, "Sensor Data CSV")
             putExtra(Intent.EXTRA_TEXT, "첨부된 센서 데이터를 확인해주세요.")
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        startActivity(Intent.createChooser(emailIntent, "Send email using:"))
+        startActivity(Intent.createChooser(intent, "Send email via:"))
     }
 }
