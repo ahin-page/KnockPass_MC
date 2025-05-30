@@ -2,12 +2,14 @@ package com.ahin.knockpass
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.*
 import android.icu.text.SimpleDateFormat
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -21,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileWriter
 import java.util.*
@@ -74,7 +77,7 @@ class SensorActivity : ComponentActivity(), SensorEventListener {
                     Button(onClick = {
                         isRecording = true
                         startSensors()
-                        micRecorder.start()
+                        micRecorder.start(context)
                         Toast.makeText(context, "수집 시작", Toast.LENGTH_SHORT).show()
                     }) {
                         Text("시작")
@@ -91,6 +94,13 @@ class SensorActivity : ComponentActivity(), SensorEventListener {
                     }) {
                         Text("끝내기")
                     }
+                }
+                Spacer(Modifier.height(24.dp))
+
+                Button(onClick = {
+                    sendEmailWithCSV(context)
+                }) {
+                    Text("CSV 이메일로 보내기")
                 }
             }
         }
@@ -157,7 +167,41 @@ class SensorActivity : ComponentActivity(), SensorEventListener {
             e.printStackTrace()
         }
     }
+    private fun sendEmailWithCSV(context: Context) {
+        val dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+        if (dir == null || !dir.exists()) {
+            Toast.makeText(context, "CSV 파일 디렉토리를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val csvFiles = dir.listFiles { _, name ->
+            name.endsWith(".csv")
+        }
+
+        if (csvFiles.isNullOrEmpty()) {
+            Toast.makeText(context, "보낼 CSV 파일이 없습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val latestFile = csvFiles.maxByOrNull { it.lastModified() } ?: return
+        val uri: Uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            latestFile
+        )
+
+        val emailIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_SUBJECT, "Sensor Data CSV")
+            putExtra(Intent.EXTRA_TEXT, "첨부된 센서 데이터를 확인해주세요.")
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(Intent.createChooser(emailIntent, "Send email using:"))
+    }
 }
+
 
 class MicRecorder(private val onAudioSample: (SensorLog) -> Unit) {
 
@@ -171,7 +215,12 @@ class MicRecorder(private val onAudioSample: (SensorLog) -> Unit) {
     private var recorder: AudioRecord? = null
     private var isRecording = false
 
-    fun start() {
+    fun start(context: Context) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("MicRecorder", "RECORD_AUDIO permission not granted")
+            return
+        }
+
         recorder = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             sampleRate,
