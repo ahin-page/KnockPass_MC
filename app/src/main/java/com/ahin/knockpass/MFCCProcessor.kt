@@ -27,9 +27,13 @@ class MFCCProcessor(
             event.setFloatBuffer(frame)
 
             mfcc.process(event)
-            result.add(mfcc.mfcc)
+            val mfccFeatures = mfcc.mfcc
+            if (mfccFeatures != null && mfccFeatures.isNotEmpty()) {
+                result.add(mfccFeatures.copyOf()) // copy to avoid mutation
+            }
             start += bufferSize / 2  // 50% overlap
         }
+
         return result.toTypedArray()
     }
 }
