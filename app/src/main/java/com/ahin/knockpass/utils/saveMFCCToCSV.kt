@@ -16,7 +16,6 @@ fun saveMFCCToCSV(context: Context, mfccData: Array<FloatArray>, filename: Strin
 
     try {
         FileWriter(file).use { writer ->
-            // Header (optional)
             val header = (1..(mfccData[0].size)).joinToString(",") { "c$it" }
             writer.write("$header\n")
 

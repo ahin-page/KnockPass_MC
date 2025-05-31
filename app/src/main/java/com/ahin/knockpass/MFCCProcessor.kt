@@ -23,8 +23,8 @@ class MFCCProcessor(
         while (start + bufferSize <= audioData.size) {
             val frame = audioData.sliceArray(start until start + bufferSize)
 
-            val event = AudioEvent(format) // ✅ 수정된 생성자
-            event.setFloatBuffer(frame)   // ✅ 직접 설정
+            val event = AudioEvent(format)
+            event.setFloatBuffer(frame)
 
             mfcc.process(event)
             result.add(mfcc.mfcc)

@@ -79,12 +79,12 @@ class SensorFragment : Fragment(), SensorEventListener {
             micRecorder.stop()
             val filename = generateFilename()
 
-            // ① 센서 데이터 CSV 저장
+            // 1. 센서 데이터 CSV 저장
             saveToCSV(requireContext(), filename)
 
-            // ② MFCC 저장 - 오디오 데이터를 MFCC로 변환 후 CSV 저장
+            // 2. MFCC 저장 - 오디오 데이터를 MFCC로 변환 후 CSV 저장
             val processor = MFCCProcessor()
-            val audioFloatArray = micRecorder.getRawAudio()  // ⚠️ 이 함수가 필요함 (MicRecorder에서 오디오 FloatArray 제공)
+            val audioFloatArray = micRecorder.getRawAudio()
             val mfccFeatures = processor.extractMFCC(audioFloatArray)
             saveMFCCToCSV(requireContext(), mfccFeatures, "${filename}_mfcc")
 

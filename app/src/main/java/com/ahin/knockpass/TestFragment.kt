@@ -52,6 +52,12 @@ class TestFragment : Fragment() {
     }
 
     private fun recordAndExtractMFCC() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(requireContext(), "마이크 권한이 필요합니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val recorder = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             sampleRate,
@@ -65,7 +71,7 @@ class TestFragment : Fragment() {
             return
         }
 
-        val audioBuffer = ShortArray(bufferSize * 5)  // 대략 0.15초~0.3초 분량
+        val audioBuffer = ShortArray(bufferSize * 5)
         recorder.startRecording()
         isRecording = true
         tvStatus.text = "녹음 중..."

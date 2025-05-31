@@ -21,7 +21,7 @@ class MicRecorder(
 
     private var recorder: AudioRecord? = null
     private var isRecording = false
-    private val recordedData = mutableListOf<Float>()  // ✅ 전체 raw audio 저장
+    private val recordedData = mutableListOf<Float>()  // 전체 raw audio 저장
 
     fun start(context: Context) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
@@ -46,7 +46,7 @@ class MicRecorder(
 
         recorder?.startRecording()
         isRecording = true
-        recordedData.clear()  // ✅ 시작할 때 초기화
+        recordedData.clear()
 
         Thread {
             val shortBuffer = ShortArray(bufferSize)
@@ -54,7 +54,7 @@ class MicRecorder(
                 val read = recorder?.read(shortBuffer, 0, shortBuffer.size) ?: 0
                 if (read > 0) {
                     val floatData = FloatArray(read) { i -> shortBuffer[i] / 32768.0f }
-                    recordedData.addAll(floatData.toList())  // ✅ 전체 저장
+                    recordedData.addAll(floatData.toList())
                     onRawAudioData(floatData)
                 }
             }
