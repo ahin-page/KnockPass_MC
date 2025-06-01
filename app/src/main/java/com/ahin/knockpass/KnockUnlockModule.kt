@@ -64,7 +64,7 @@ object KnockUnlockModule {
         val refVec = FloatArray(dim) { i -> filtered.map { it[i] }.average().toFloat() }
 
         val diffs = filtered.map { 1f - cosineSimilarity(it, refVec) } // 거리화
-        val threshold = diffs.average().toFloat()  // 또는 diffs.maxOrNull() 도 가능
+        val threshold = 1f - diffs.average().toFloat()  // 또는 diffs.maxOrNull() 도 가능
 
         return Pair(refVec, threshold)
     }
@@ -78,7 +78,9 @@ object KnockUnlockModule {
 
 
     fun shouldUnlock(current: FloatArray, reference: FloatArray, threshold: Float = 0.90f): Boolean {
-        return cosineSimilarity(current, reference) >= threshold
+        val similarity = cosineSimilarity(current, reference)
+        println("🔍 cosineSimilarity = $similarity, threshold = $threshold")
+        return similarity >= threshold
     }
 
     fun saveReferenceVector(context: Context, vector: FloatArray) {

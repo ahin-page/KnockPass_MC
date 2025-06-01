@@ -33,6 +33,9 @@ class HomeFragment : Fragment() {
     private lateinit var audioBuffer: ShortArray
     private var isRecording = false
 
+    private val audioDataList = mutableListOf<Float>()
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -94,7 +97,22 @@ class HomeFragment : Fragment() {
         audioBuffer = ShortArray(bufferSize * 5)
 
         isRecording = true
-        audioRecorder.startRecording()
+        audioDataList.clear()
+
+        Thread {
+            audioRecorder.startRecording()
+            val shortBuffer = ShortArray(bufferSize)
+            while (isRecording) {
+                val readCount = audioRecorder.read(shortBuffer, 0, bufferSize)
+                if (readCount > 0) {
+                    val floatFrame = FloatArray(readCount) { i -> shortBuffer[i] / 32768.0f }
+                    synchronized(audioDataList) {
+                        audioDataList.addAll(floatFrame.toList())
+                    }
+                }
+            }
+        }.start()
+
     }
 
     private fun stopRecordingAndUnlock() {
@@ -103,16 +121,21 @@ class HomeFragment : Fragment() {
 
         Thread {
             try {
-                val readSamples = audioRecorder.read(audioBuffer, 0, audioBuffer.size)
+                // Thread가 녹음을 마칠 수 있도록 잠깐 대기
+                Thread.sleep(100)  // 또는 join 처리 가능
+
                 audioRecorder.stop()
                 audioRecorder.release()
 
-                if (readSamples <= 0) {
-                    showToast("❌ 녹음 실패")
+                val floatData: FloatArray = synchronized(audioDataList) {
+                    audioDataList.toFloatArray()
+                }
+
+                if (floatData.isEmpty()) {
+                    showToast("❌ 녹음된 데이터가 없습니다.")
                     return@Thread
                 }
 
-                val floatData = FloatArray(readSamples) { i -> audioBuffer[i] / 32768.0f }
                 val mfcc = MFCCProcessor().extractMFCC(floatData)
 
                 val docsDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
@@ -139,9 +162,13 @@ class HomeFragment : Fragment() {
                     showText("⚠️ 기준 벡터 생성 실패")
                     return@Thread
                 }
-                println(mfcc.joinToString(separator = "\n") { it.joinToString(prefix = "[", postfix = "]") })
+                //println(mfcc.joinToString(separator = "\n") { it.joinToString(prefix = "[", postfix = "]") })
 
-                val mfcc2 = mfcc?.let { MFCCUtils.extractPeakWindowMFCC(it) } ?: return@Thread
+                val mfcc2 = mfcc?.let { MFCCUtils.extractPeakWindowMFCC(it) }
+                if (mfcc2 == null) {
+                    showText("인증 실패 (유효한 peak 없음)")
+                    return@Thread
+                }
 
                 val (reference, threshold)= KnockUnlockModule.computeReferenceVector(refEmbeddings)
                 println(reference)
@@ -155,15 +182,16 @@ class HomeFragment : Fragment() {
 //                }
 
                 val current = KnockUnlockModule.getEmbedding(reshapeMFCC(mfcc2))
-                val unlocked = KnockUnlockModule.shouldUnlock(current, reference)
+                val unlocked = KnockUnlockModule.shouldUnlock(current, reference,threshold)
 
-                showText(if (unlocked) "✅ 잠금 해제 성공!" else "❌ 인증 실패")
+                showText(if (unlocked) "잠금 해제 성공!" else "인증 실패")
             } catch (e: Exception) {
                 e.printStackTrace()
                 showText("❌ 에러 발생: ${e.localizedMessage}")
             }
         }.start()
     }
+
 
     private fun showText(msg: String) {
         requireActivity().runOnUiThread {
