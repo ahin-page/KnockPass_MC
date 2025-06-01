@@ -52,6 +52,7 @@ class SettingFragment : Fragment() {
         btnStop    = view.findViewById(R.id.btnStop)
 
         // 초기 상태: 0 / 5
+        attemptCount = getRecordedAttemptCount()
         tvProgress.text = "$attemptCount / $REQUIRED_ATTEMPTS"
 
         btnStart.setOnClickListener {
@@ -238,4 +239,11 @@ class SettingFragment : Fragment() {
                 "원시 오디오 CSV 저장 실패: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
         }
     }
+    private fun getRecordedAttemptCount(): Int {
+        val dir = requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS)
+        return dir?.listFiles { _, name ->
+            name.matches(Regex("\\d+_lock_audio_pattern_mfcc\\.csv"))
+        }?.size ?: 0
+    }
+
 }

@@ -2,7 +2,6 @@ package com.ahin.knockpass
 
 import android.content.Context
 import android.content.res.AssetFileDescriptor
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.ahin.knockpass.utils.MFCCUtils
 import org.tensorflow.lite.Interpreter
 import java.io.*
@@ -66,7 +65,7 @@ object KnockUnlockModule {
         return FloatArray(dim) { i -> filtered.map { it[i] }.average().toFloat() }
     }
 
-    fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {
+    private fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {
         val dot = v1.zip(v2) { a, b -> a * b }.sum()
         val norm1 = sqrt(v1.map { it * it }.sum())
         val norm2 = sqrt(v2.map { it * it }.sum())

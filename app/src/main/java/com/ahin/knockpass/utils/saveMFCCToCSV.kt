@@ -1,5 +1,6 @@
 package com.ahin.knockpass.utils
 
+import android.app.Activity
 import android.content.Context
 import android.os.Environment
 import android.widget.Toast
@@ -24,8 +25,26 @@ fun saveMFCCToCSV(context: Context, mfccData: Array<FloatArray>, filename: Strin
                 writer.write(frame.joinToString(",") + "\n")
             }
         }
-        Toast.makeText(context, "MFCC 저장 완료: ${file.name}", Toast.LENGTH_SHORT).show()
+        (context as? Activity)?.runOnUiThread {
+            Toast.makeText(context, "파일 저장 완료", Toast.LENGTH_SHORT).show()
+        }
+
     } catch (e: Exception) {
-        Toast.makeText(context, "MFCC 저장 실패: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        (context as? Activity)?.runOnUiThread {
+            Toast.makeText(context, "MFCC 저장 실패: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        }
+    }
+}
+
+fun reshapeMFCC(input: Array<FloatArray>): Array<Array<Array<FloatArray>>> {
+    val numFrames = input.size
+    val numCoeffs = input[0].size
+
+    return Array(1) { // batch size = 1
+        Array(numFrames) { i ->
+            Array(numCoeffs) { j ->
+                FloatArray(1) { input[i][j] } // [coeff] → [coeff][1]
+            }
+        }
     }
 }

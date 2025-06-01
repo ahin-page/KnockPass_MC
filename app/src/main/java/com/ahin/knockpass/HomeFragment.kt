@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.ahin.knockpass.utils.MFCCUtils
+import com.ahin.knockpass.utils.reshapeMFCC
 import java.io.*
 
 class HomeFragment : Fragment() {
@@ -78,6 +79,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun startRecording() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(requireContext(), "마이크 권한이 필요합니다", Toast.LENGTH_SHORT).show()
+            return
+        }
         audioRecorder = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             sampleRate,
@@ -132,18 +138,20 @@ class HomeFragment : Fragment() {
                     showText("⚠️ 기준 벡터 생성 실패")
                     return@Thread
                 }
+                val mfcc2 = mfcc?.let { MFCCUtils.extractPeakWindowMFCC(it) } ?: return@Thread
 
                 val reference = KnockUnlockModule.computeReferenceVector(refEmbeddings)
-                val tempFile = File(docsDir, "temp_input_mfcc.csv")
-                com.ahin.knockpass.utils.saveMFCCToCSV(requireContext(), mfcc, "temp_input_mfcc")
-                println("sliced before")
-                val sliced = KnockUnlockModule.readMFCCfromCSV(tempFile)
-                if (sliced.isEmpty()) {
-                    showText("❌ 유효한 피크가 없습니다.")
-                    return@Thread
-                }
+                println(reference)
+//                val tempFile = File(docsDir, "temp_input_mfcc.csv")
+//                com.ahin.knockpass.utils.saveMFCCToCSV(requireContext(), mfcc, "temp_input_mfcc")
+//                println("sliced before")
+//                val sliced = KnockUnlockModule.readMFCCfromCSV(tempFile)
+//                if (sliced.isEmpty()) {
+//                    showText("❌ 유효한 피크가 없습니다.")
+//                    return@Thread
+//                }
 
-                val current = KnockUnlockModule.getEmbedding(sliced)
+                val current = KnockUnlockModule.getEmbedding(reshapeMFCC(mfcc2))
                 val unlocked = KnockUnlockModule.shouldUnlock(current, reference)
 
                 showText(if (unlocked) "✅ 잠금 해제 성공!" else "❌ 인증 실패")
