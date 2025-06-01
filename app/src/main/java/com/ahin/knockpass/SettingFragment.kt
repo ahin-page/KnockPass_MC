@@ -40,6 +40,7 @@ class SettingFragment : Fragment() {
     private var recorder: AudioRecord? = null
     private var isRecording = false
     private val audioDataList = mutableListOf<Float>()
+    private lateinit var btnReset: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +51,7 @@ class SettingFragment : Fragment() {
         tvProgress = view.findViewById(R.id.tvProgress)
         btnStart   = view.findViewById(R.id.btnStart)
         btnStop    = view.findViewById(R.id.btnStop)
+        btnReset = view.findViewById(R.id.btnReset)
 
         // 초기 상태: 0 / 5
         attemptCount = getRecordedAttemptCount()
@@ -93,7 +95,18 @@ class SettingFragment : Fragment() {
             }
             stopRecordingAndSave()
         }
+        btnReset.setOnClickListener {
+            val dir = requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS)
+            if (dir != null && dir.exists()) {
+                val deletedCount = dir.listFiles { _, name ->
+                    name.matches(Regex("\\d+_lock_audio_pattern(_mfcc)?\\.csv"))
+                }?.count { it.delete() } ?: 0
 
+                attemptCount = 0
+                tvProgress.text = "$attemptCount / $REQUIRED_ATTEMPTS"
+                Toast.makeText(requireContext(), "재설정합니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
         return view
     }
 

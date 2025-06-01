@@ -59,7 +59,7 @@ object KnockUnlockModule {
             it.zip(avg) { a, b -> (a - b) * (a - b) }.sum()
         }
 
-        val top2Indices = variances.withIndex().sortedByDescending { it.value }.take(2).map { it.index }
+        val top2Indices = variances.withIndex().sortedByDescending { it.value }.take(0).map { it.index }
         val filtered = embeddings.filterIndexed { i, _ -> i !in top2Indices }
         val refVec = FloatArray(dim) { i -> filtered.map { it[i] }.average().toFloat() }
 
