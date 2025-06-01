@@ -39,7 +39,6 @@ fun saveMFCCToCSV(context: Context, mfccData: Array<FloatArray>, filename: Strin
 fun reshapeMFCC(input: Array<FloatArray>): Array<Array<Array<FloatArray>>> {
     val numFrames = input.size
     val numCoeffs = input[0].size
-
     return Array(1) { // batch size = 1
         Array(numFrames) { i ->
             Array(numCoeffs) { j ->

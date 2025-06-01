@@ -47,9 +47,10 @@ object MFCCUtils {
                 inPeak = false
             }
         }
+        println(c1List)
 
         if (peakStarts.isEmpty()) {
-            println("⚠️ No peak detected in MFCC data")
+            println("⚠️ No peak")
             return null
         }
 

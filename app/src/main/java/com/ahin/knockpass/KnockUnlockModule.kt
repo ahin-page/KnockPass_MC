@@ -51,7 +51,7 @@ object KnockUnlockModule {
         return output[0]
     }
 
-    fun computeReferenceVector(embeddings: List<FloatArray>): FloatArray {
+    fun computeReferenceVector(embeddings: List<FloatArray>): Pair<FloatArray, Float> {
         val dim = embeddings[0].size
         val avg = FloatArray(dim) { i -> embeddings.map { it[i] }.average().toFloat() }
 
@@ -61,8 +61,12 @@ object KnockUnlockModule {
 
         val top2Indices = variances.withIndex().sortedByDescending { it.value }.take(2).map { it.index }
         val filtered = embeddings.filterIndexed { i, _ -> i !in top2Indices }
+        val refVec = FloatArray(dim) { i -> filtered.map { it[i] }.average().toFloat() }
 
-        return FloatArray(dim) { i -> filtered.map { it[i] }.average().toFloat() }
+        val diffs = filtered.map { 1f - cosineSimilarity(it, refVec) } // 거리화
+        val threshold = diffs.average().toFloat()  // 또는 diffs.maxOrNull() 도 가능
+
+        return Pair(refVec, threshold)
     }
 
     private fun cosineSimilarity(v1: FloatArray, v2: FloatArray): Float {

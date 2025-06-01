@@ -92,6 +92,7 @@ class HomeFragment : Fragment() {
             bufferSize * 5
         )
         audioBuffer = ShortArray(bufferSize * 5)
+
         isRecording = true
         audioRecorder.startRecording()
     }
@@ -138,9 +139,11 @@ class HomeFragment : Fragment() {
                     showText("⚠️ 기준 벡터 생성 실패")
                     return@Thread
                 }
+                println(mfcc.joinToString(separator = "\n") { it.joinToString(prefix = "[", postfix = "]") })
+
                 val mfcc2 = mfcc?.let { MFCCUtils.extractPeakWindowMFCC(it) } ?: return@Thread
 
-                val reference = KnockUnlockModule.computeReferenceVector(refEmbeddings)
+                val (reference, threshold)= KnockUnlockModule.computeReferenceVector(refEmbeddings)
                 println(reference)
 //                val tempFile = File(docsDir, "temp_input_mfcc.csv")
 //                com.ahin.knockpass.utils.saveMFCCToCSV(requireContext(), mfcc, "temp_input_mfcc")
