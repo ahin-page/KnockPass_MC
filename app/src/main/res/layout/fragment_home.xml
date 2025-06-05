@@ -1,57 +1,50 @@
-<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent"-->
-<!--    android:orientation="vertical"-->
-<!--    android:gravity="center"-->
-<!--    android:padding="16dp">-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/tvIntro"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text=""/>-->
-<!--</LinearLayout>-->
-
 <LinearLayout
-xmlns:android="http://schemas.android.com/apk/res/android"
-android:id="@+id/homeContainer"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical"
-android:padding="16dp">
-
-<TextView
-    android:id="@+id/tvIntro"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/homeContainer"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="앱을 사용하려면 설정 탭에서 암호 패턴을 먼저 설정하세요."/>
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:layout_gravity="center">
 
-<Button
-    android:id="@+id/btnTryUnlock"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="🔓 잠금 해제 시도" />
-<Button
-    android:id="@+id/btnStartRecording"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="시작"
-    android:visibility="gone" />
+    <TextView
+        android:id="@+id/tvIntro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="앱을 사용하려면 설정 탭에서 암호 패턴을 먼저 설정하세요."
+        android:gravity="center"
+        android:paddingBottom="12dp"/>
 
-<Button
-    android:id="@+id/btnStopRecording"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="끝내기"
-    android:visibility="gone" />
+    <Button
+        android:id="@+id/btnTryUnlock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="잠금 해제 시도"
+        android:layout_marginTop="8dp"/>
 
-<TextView
-    android:id="@+id/tvUnlockResult"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="결과 없음"
-    android:textSize="18sp"
-    android:paddingTop="16dp" />
+    <Button
+        android:id="@+id/btnStartRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="시작"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
 
+    <Button
+        android:id="@+id/btnStopRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="끝내기"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
 
+    <TextView
+        android:id="@+id/tvUnlockResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="결과 없음"
+        android:textSize="18sp"
+        android:paddingTop="24dp"
+        android:gravity="center"/>
 </LinearLayout>

@@ -79,9 +79,11 @@ object KnockUnlockModule {
 
     fun shouldUnlock(current: FloatArray, reference: FloatArray, threshold: Float = 0.90f): Boolean {
         val similarity = cosineSimilarity(current, reference)
-        println("🔍 cosineSimilarity = $similarity, threshold = $threshold")
-        return similarity >= threshold
+        val adjustedThreshold = if (threshold > 0.98f) 0.98f else threshold
+        println("cosineSimilarity = $similarity, threshold = $adjustedThreshold")
+        return similarity >= adjustedThreshold
     }
+
 
     // 매번 reference vector 계산하는거 비효율적이라서 넣어놨는데 오류 나올까봐 스킵합니다...
     fun saveReferenceVector(context: Context, vector: FloatArray) {

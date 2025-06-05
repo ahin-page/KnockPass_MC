@@ -68,12 +68,12 @@ class HomeFragment : Fragment() {
 
             btnStart.visibility = View.VISIBLE
             btnStop.visibility = View.VISIBLE
-            tvResult.text = "🎤 시작 버튼을 누르면 녹음이 시작됩니다."
+            tvResult.text = "시작 버튼을 누르면 녹음이 시작됩니다."   //"시작 버튼을 누르면 녹음이 시작됩니다."
         }
 
         btnStart.setOnClickListener {
             startRecording()
-            tvResult.text = "🎙️ 녹음 중입니다... 끝내기 버튼을 눌러주세요."
+            tvResult.text = "녹음 중입니다... 끝내기 버튼을 눌러주세요."
         }
 
         btnStop.setOnClickListener {
@@ -117,7 +117,7 @@ class HomeFragment : Fragment() {
 
     private fun stopRecordingAndUnlock() {
         isRecording = false
-        tvResult.text = "🔍 분석 중..."
+        tvResult.text = "분석 중..."
 
         Thread {
             try {
@@ -132,7 +132,7 @@ class HomeFragment : Fragment() {
                 }
 
                 if (floatData.isEmpty()) {
-                    showToast("❌ 녹음된 데이터가 없습니다.")
+                    showToast("녹음된 데이터가 없습니다.")
                     return@Thread
                 }
 
@@ -144,14 +144,14 @@ class HomeFragment : Fragment() {
                     ?.sortedBy { it.lastModified() }
 
                 if (refFiles.isNullOrEmpty()) {
-                    showText("⚠️ 기준 MFCC 파일이 없습니다.")
+                    showText("Setting으로 이동해서 lock pattern을 설정하세요.")
                     return@Thread
                 }
 
                 val refEmbeddings = refFiles.mapNotNull { file ->
                     val input = KnockUnlockModule.readMFCCfromCSV(file)
                     if (input.isEmpty()) {
-                        println("❌ Skipping ${file.name}: no peak window extracted.")
+                        println("kipping ${file.name}: no peak window extracted.")
                         null
                     } else {
                         KnockUnlockModule.getEmbedding(input)
@@ -159,7 +159,7 @@ class HomeFragment : Fragment() {
                 }
 
                 if (refEmbeddings.isEmpty()) {
-                    showText("⚠️ 기준 벡터 생성 실패")
+                    showText("기준 벡터 생성 실패")
                     return@Thread
                 }
                 //println(mfcc.joinToString(separator = "\n") { it.joinToString(prefix = "[", postfix = "]") })
@@ -172,14 +172,6 @@ class HomeFragment : Fragment() {
 
                 val (reference, threshold)= KnockUnlockModule.computeReferenceVector(refEmbeddings)
                 println(reference)
-//                val tempFile = File(docsDir, "temp_input_mfcc.csv")
-//                com.ahin.knockpass.utils.saveMFCCToCSV(requireContext(), mfcc, "temp_input_mfcc")
-//                println("sliced before")
-//                val sliced = KnockUnlockModule.readMFCCfromCSV(tempFile)
-//                if (sliced.isEmpty()) {
-//                    showText("❌ 유효한 피크가 없습니다.")
-//                    return@Thread
-//                }
 
                 val current = KnockUnlockModule.getEmbedding(reshapeMFCC(mfcc2))
                 val unlocked = KnockUnlockModule.shouldUnlock(current, reference,threshold)
@@ -187,7 +179,7 @@ class HomeFragment : Fragment() {
                 showText(if (unlocked) "잠금 해제 성공!" else "인증 실패")
             } catch (e: Exception) {
                 e.printStackTrace()
-                showText("❌ 에러 발생: ${e.localizedMessage}")
+                showText("에러 발생: ${e.localizedMessage}")
             }
         }.start()
     }

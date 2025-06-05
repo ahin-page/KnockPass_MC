@@ -50,7 +50,7 @@ object MFCCUtils {
         println(c1List)
 
         if (peakStarts.isEmpty()) {
-            println("⚠️ No peak")
+            println("No peak")
             return null
         }
 
