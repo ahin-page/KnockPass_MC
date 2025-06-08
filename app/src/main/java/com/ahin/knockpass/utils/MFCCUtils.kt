@@ -6,7 +6,7 @@ import java.io.File
 import java.io.InputStreamReader
 object MFCCUtils {
 
-    // 1️⃣ CSV 파일로부터 MFCC 읽기
+    // CSV 파일로부터 MFCC 읽기
     fun readMFCCFromCSV(file: File): Array<FloatArray>? {
         val mfccList = mutableListOf<FloatArray>()
         try {
@@ -26,7 +26,7 @@ object MFCCUtils {
         }
     }
 
-    // 2️⃣ 핵심 피크 추출 로직
+    // 핵심 피크 추출 로직
     fun extractPeakWindow(
         mfccData: Array<FloatArray>,
         preFrames: Int = 10,
@@ -68,13 +68,13 @@ object MFCCUtils {
         return sliced.toTypedArray()
     }
 
-    // 3️⃣ 파일 기반: CSV 파일을 읽고 → extract
+    // 파일 기반: CSV 파일을 읽고 → extract
     fun extractPeakWindowMFCC(file: File, preFrames: Int = 10, postFrames: Int = 30): Array<FloatArray>? {
         val raw = readMFCCFromCSV(file) ?: return null
         return extractPeakWindow(raw, preFrames, postFrames)
     }
 
-    // 4️⃣ MFCC 배열 기반 직접 호출
+    // MFCC 배열 기반 직접 호출
     fun extractPeakWindowMFCC(mfccData: Array<FloatArray>, preFrames: Int = 10, postFrames: Int = 30): Array<FloatArray>? {
         return extractPeakWindow(mfccData, preFrames, postFrames)
     }
